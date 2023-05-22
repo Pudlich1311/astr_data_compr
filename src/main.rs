@@ -1,3 +1,9 @@
+
+mod csv_read;
+
 fn main() {
-    println!("Hello, world!");
+    let mut csv = csv_read::CsvRead::default();
+
+    csv.read();
+    csv.print();
 }
