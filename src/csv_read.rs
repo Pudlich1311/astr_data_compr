@@ -1,7 +1,7 @@
 
 pub struct CsvRead{
-    pub headers: Vec<String>,
-    pub values: Vec<Vec<String>>
+    headers: Vec<String>,
+    values: Vec<Vec<String>>
 }
 
 impl Default for CsvRead {
@@ -42,5 +42,13 @@ impl CsvRead{
             break;
         }
 
+    }
+
+    pub fn ret_values(&self) -> &Vec<Vec<String>>{
+        return &self.values;
+    }
+
+    pub fn ret_head_size(&self) -> usize{
+        return self.headers.len()
     }
 }
