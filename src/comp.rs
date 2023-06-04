@@ -1,29 +1,28 @@
 pub struct Compress{
-    pub values: Vec<Vec<String>>,
+    pub data: Vec<Vec<String>>,
 }
 
 
 
 impl Compress{
 
-    pub fn split(&mut self){
+    pub fn split_and_comp(&mut self){
 
-        for n in 0..=self.values[0].len(){
+        for n in 0..=self.data[0].len(){
 
             let mut column = Vec::new();
 
-            for val in self.values.iter(){
+            for val in self.data.iter(){
                 if let Some(v) = val.iter().nth(n){
                     column.push(v.clone());
                 }
             }
         
 
-            let modified_col = self.duplicates(column);
-            //here do some stuff on columns
+            let modified_col = self.remove_duplicates(column);
 
 
-            for (index, val) in self.values.iter_mut().enumerate(){
+            for (index, val) in self.data.iter_mut().enumerate(){
                 if let Some(v) = val.iter_mut().nth(n){
                     let value = modified_col.get(index).to_owned();
                     *v = value.unwrap().to_owned();
@@ -33,7 +32,7 @@ impl Compress{
         }
     }
 
-    fn duplicates(&self, mut col: Vec<String>) -> Vec<String>{
+    fn remove_duplicates(&self, mut col: Vec<String>) -> Vec<String>{
 
         let mut change_val = true;
         let mut prev_val = "";
@@ -47,7 +46,7 @@ impl Compress{
             }
 
             if v == prev_val{
-                *v = "".to_string();
+                *v = "-".to_string();
             }
             else{
                 change_val=true;
@@ -57,17 +56,17 @@ impl Compress{
     }
 
 
-    pub fn print(&self){
+    // pub fn print(&self){
 
 
-        for val in self.values.iter(){
-            for v in val.iter(){
-                print!("'{}',",v );
-            }
-            println!("NEXT");
-        }
+    //     for val in self.data.iter(){
+    //         for v in val.iter(){
+    //             print!("'{}',",v );
+    //         }
+    //         println!("NEXT");
+    //     }
 
-    }
+    // }
     
 
 }

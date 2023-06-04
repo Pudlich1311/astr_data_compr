@@ -3,16 +3,16 @@ mod csv_read;
 mod comp;
 
 fn main() {
-    let mut csv = csv_read::CsvRead::default();
+    let mut csv = csv_read::Csv::default();
 
     csv.read();
 
     let mut compr = comp::Compress{
-        values: csv.ret_values().to_vec(),
+        data: csv.ret_values().to_vec(),
     };
 
-    compr.print();
-    compr.split();
+    compr.split_and_comp();
 
-    compr.print();
+    csv.save(compr.data)
+
 }
