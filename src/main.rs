@@ -1,17 +1,17 @@
 
 mod csv_read;
-mod comp;
+mod compress;
 
 fn main() {
     let mut csv = csv_read::Csv::default();
 
     csv.read();
 
-    let mut compr = comp::Compress{
-        data: csv.ret_values().to_vec(),
+    let mut compr = compress::Compress{
+        data: csv.ret_data().to_vec(),
     };
 
-    compr.split_and_comp();
+    compr.split_and_compress();
 
     csv.save(compr.data)
 

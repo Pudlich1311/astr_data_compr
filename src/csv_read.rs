@@ -2,13 +2,12 @@ use std::{fs::File, fmt::write, io::Write};
 
 
 pub struct Csv{
-    headers: Vec<String>,
-    values: Vec<Vec<String>>
+    data: Vec<Vec<String>>
 }
 
 impl Default for Csv {
     fn default () -> Csv {
-        Csv { headers: Vec::new(), values: Vec::new() }
+        Csv { data: Vec::new() }
     }
 }
 
@@ -16,18 +15,21 @@ impl Csv{
     
 
     pub fn read(&mut self){
-        let mut rdr = csv::Reader::from_path("/home/pudlich/Documents/projekty/ntwi/astr_data_compr/test.csv").unwrap();
+        let mut rdr = csv::Reader::from_path("Gaiatest.csv").unwrap();
         
+        let mut headers = Vec::new();
         for header in rdr.headers().unwrap().iter(){
-            self.headers.push(header.to_string());
+            headers.push(header.to_string());
         }
+
+        self.data.push(headers);
 
         for row in rdr.records() {
             let mut temp = Vec::new();
             for r in row.unwrap().iter() {
                 temp.push(r.to_string());
             }
-            self.values.push(temp);
+            self.data.push(temp);
         }
     }
 
@@ -42,9 +44,6 @@ impl Csv{
             }
         };
 
-        let data_str = self.headers.iter().map(|num| num.to_string()).collect::<Vec<_>>().join(",");
-        write!(file,"{}\n",data_str);
-
         for val in modified_data.iter(){
             let line = val.iter().map(|num| num.to_string()).collect::<Vec<_>>().join(",");
             write!(file,"{}\n",line);
@@ -52,8 +51,8 @@ impl Csv{
 
     }
 
-    pub fn ret_values(&self) -> &Vec<Vec<String>>{
-        return &self.values;
+    pub fn ret_data(&self) -> &Vec<Vec<String>>{
+        return &self.data;
     }
 
 
