@@ -1,0 +1,58 @@
+Results of different compression tools 
+
+Size of original file 102484051 
+
+bsc_m03:
+    Time: 62 seconds
+    Size after compression: 33546193
+    .68 percentage compression
+
+bsc_m03:
+    Time: 55 seconds
+
+
+7zip:
+    Time: 58 seconds
+    Size after compression: 36688176
+    .65 percentage compression
+
+7zip:
+    Time: 2 seconds
+
+
+zstd:
+    Time: 1 seconds
+    Size after compression: 43498909
+    .58 percentage compression
+
+zstd:
+    Time: 0 seconds
+
+
+mcm:
+    Time: 46 seconds
+    Size after compression: 32166950
+    .69 percentage compression
+
+mcm:
+    Time: 46 seconds
+
+
+gzip:
+    Time: 7 seconds
+    Size after compression: 41709749
+    .60 percentage compression
+
+gzip:
+    Time: 0 seconds
+
+
+my_compressor:
+    Time: 64 seconds
+    Size after compression: 22332114
+    .79 percentage compression
+
+my_compressor:
+    Time: 29 seconds
+
+
