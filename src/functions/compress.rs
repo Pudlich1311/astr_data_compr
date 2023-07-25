@@ -7,7 +7,8 @@ use flate2::write::ZlibEncoder;
 
 pub struct Compress{
     pub data: Vec<Vec<String>>,
-    pub compressed_data: Vec<u8>
+    pub compressed_data: Vec<u8>,
+    pub round: bool
 }
 
 impl Compress{
@@ -24,11 +25,13 @@ impl Compress{
                 }
             }
 
+            if(self.round){
+                column = self.round_values(column);
+            }
+
             
-            let round_col = self.round_values(column);
-            let delta_col = self.delta_encode(round_col);
+            let delta_col = self.delta_encode(column);
             let duplicates_col = self.remove_duplicates(delta_col);
-            
 
             for (index, val) in self.data.iter_mut().enumerate(){
                 if let Some(v) = val.iter_mut().nth(n){
@@ -47,9 +50,9 @@ impl Compress{
         .join("\n");
 
 
-        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-        encoder.write_all(flattened_data.as_bytes()).unwrap();
-        self.compressed_data = encoder.finish().unwrap();
+        self.compressed_data = flattened_data.into_bytes();
+
+
 
     }
 
@@ -64,7 +67,8 @@ impl Compress{
                 continue;
             }
 
-            let can_parse=Decimal::from_str(num).is_ok();
+            let can_parse=Decimal::from_str(num).is_ok() &&
+                                i32::from_str(num).is_ok();
 
             if can_parse{
 
@@ -126,7 +130,8 @@ impl Compress{
 
     fn remove_duplicates(&self, mut col: Vec<String>) -> Vec<String>{
 
-        let mut encountered = HashSet::new();
+        let mut prev_val = String::new();
+        let mut first_iter = true;
 
         for num in &mut col.iter_mut() {
 
@@ -134,9 +139,19 @@ impl Compress{
                 continue;
             }
 
-            if !encountered.insert(num.clone()) {
-                *num = "-".to_string();
+            if first_iter{
+                first_iter=false;
+                prev_val=num.to_string();
+                continue;
             }
+
+            if num == &prev_val{
+                *num="-".to_string();
+            }
+            else{
+                prev_val=num.to_string();
+            }
+
         }
 
         return col;

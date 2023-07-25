@@ -43,9 +43,9 @@ function decompress(){
     Time: $(($end-$start)) seconds\n\n" >> results.txt 
 }
 
-compress "bsc_m03" "./src/bsc-m03/build/bsc_m03 e ./data/Gaiatest.csv ./comp.bsc -b1000000000" "comp.bsc"
+compress "bsc_m03" "./bsc_m03 e ./data/Gaiatest.csv ./comp.bsc -b1000000000" "comp.bsc"
 
-decompress "bsc_m03" "./src/bsc-m03/build/bsc_m03 d ./comp.bsc ./bsc_output.csv" "comp.bsc" "bsc_output.csv"
+decompress "bsc_m03" "./bsc_m03 d ./comp.bsc ./bsc_output.csv" "comp.bsc" "bsc_output.csv"
 
 compress "7zip" "7z a comp.7z ./data/Gaiatest.csv" "comp.7z"
 

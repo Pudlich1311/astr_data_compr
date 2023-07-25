@@ -15,16 +15,27 @@ fn main() {
     while let Some((index, argument)) = iter.next() {
         if *argument == "-h" {
             println!("Help:");
+            println!("  [-cr file] compress a specific file with rounding");
             println!("  [-c file] compress a specific file");
             println!("  [-d file] decompress a specific file");
-            println!("  [-rc path] compress recursively all csv files in path");
-            println!("  [-rd path] decompress recursively all compressed files in path");
+            println!("  [-recc path] compress recursively all csv files in path");
+            println!("  [-reccr path] compress recursively all csv files in path with rounding");
+            println!("  [-recd path] decompress recursively all compressed files in path");
         }
 
+        if *argument == "-cr"{
+            if let Some(next_argument) = iter.next() {
+                let path: &Path = Path::new(next_argument.1);
+                functions::compress_single_file(path, &mut csv,true)
+            } else {
+                println!("Error");
+            }
+            break;
+        }
         if *argument == "-c" {
             if let Some(next_argument) = iter.next() {
                 let path: &Path = Path::new(next_argument.1);
-                functions::compress_single_file(path, &mut csv)
+                functions::compress_single_file(path, &mut csv,false)
             } else {
                 println!("Error");
             }
@@ -41,17 +52,27 @@ fn main() {
             break;
         }
 
-        if *argument == "-rc" {
+        if *argument == "-recc" {
             if let Some(next_argument) = iter.next() {
                 let path: &Path = Path::new(next_argument.1);
-                functions::compress_recursively(path, &mut csv);
+                functions::compress_recursively(path, &mut csv,false);
             } else {
                 println!("Error");
             }
             break;
         }
 
-        if *argument == "-rd" {
+        if *argument == "-reccr" {
+            if let Some(next_argument) = iter.next() {
+                let path: &Path = Path::new(next_argument.1);
+                functions::compress_recursively(path, &mut csv,true);
+            } else {
+                println!("Error");
+            }
+            break;
+        }
+
+        if *argument == "-recd" {
             if let Some(next_argument) = iter.next() {
                 let path: &Path = Path::new(next_argument.1);
                 functions::decompress_recursively(path, &mut csv);
