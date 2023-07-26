@@ -3,11 +3,12 @@ use rust_decimal::prelude::*;
 use std::io::prelude::*;
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
+use zfp_sys::*;
 
 
 pub struct Compress{
     pub data: Vec<Vec<String>>,
-    pub compressed_data: Vec<u8>,
+    pub compressed_data: Vec<Vec<String>>,
     pub round: bool
 }
 
@@ -29,10 +30,10 @@ impl Compress{
                 column = self.round_values(column);
             }
 
-            
-            let delta_col = self.delta_encode(column);
-            let duplicates_col = self.remove_duplicates(delta_col);
 
+            let delta_col = self.delta_encode(&column);
+            let duplicates_col = self.remove_duplicates(delta_col);
+        
             for (index, val) in self.data.iter_mut().enumerate(){
                 if let Some(v) = val.iter_mut().nth(n){
                     let value = duplicates_col.get(index).to_owned();
@@ -40,60 +41,43 @@ impl Compress{
                 }
             }
             
+            self.compressed_data=self.data.clone();
         }
+    }
+
+    
 
 
-        let flattened_data: String = self.data
-        .iter()
-        .map(|inner| inner.join(","))
-        .collect::<Vec<String>>()
-        .join("\n");
+    fn float_encode(&self, col: Vec<String>) -> Vec<String>{
+
+        let mut encoded_values = self.delta_encode(&col);
 
 
-        self.compressed_data = flattened_data.into_bytes();
-
-
+        return encoded_values;
 
     }
 
-    fn delta_encode(&self, mut col: Vec<String>) -> Vec<String>{
 
-        let mut first_iter = true;
-        let mut prev_value= Decimal::new(0, 2);
-        let mut temp= Decimal::new(0, 2);
-        for num in &mut col.iter_mut() {
 
-            if num == ""{
+    fn delta_encode(&self, data: &Vec<String>) -> Vec<String>{
+
+        let mut encoded_data = Vec::with_capacity(data.len());
+        let mut prev_value = Decimal::new(0, 2);
+    
+        for value in data {
+
+            if Decimal::from_str(&value).is_err(){
+                encoded_data.push(value.to_string());
                 continue;
             }
+            let temp = Decimal::from_str(&value).unwrap();
+            let diff = temp - prev_value;
 
-            let can_parse=Decimal::from_str(num).is_ok() &&
-                                i32::from_str(num).is_ok();
-
-            if can_parse{
-
-                let scientific = Decimal::from_scientific(num).is_ok();
-                if scientific{
-                    temp =  Decimal::from_scientific(num).unwrap();
-                }
-                else{
-                    temp = Decimal::from_str(num).unwrap();
-                }
-
-                if first_iter{
-                    prev_value=temp;
-                    first_iter=false;
-                    continue;
-                }
-
-                let delta = prev_value - temp;
-                *num=delta.to_string();
-            }
-
+            encoded_data.push(diff.to_string());
+            prev_value = temp;
         }
-
-        
-        return col;
+    
+        encoded_data
     }
 
     fn round_values(&self, mut col: Vec<String>) -> Vec<String>{
@@ -134,11 +118,11 @@ impl Compress{
         let mut first_iter = true;
 
         for num in &mut col.iter_mut() {
-
+    
             if num == ""{
-                continue;
+                continue; 
             }
-
+    
             if first_iter{
                 first_iter=false;
                 prev_val=num.to_string();

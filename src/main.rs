@@ -5,7 +5,12 @@ use std::env;
 use crate::functions::csv;
 use std::path::Path;
 
+
+
 fn main() {
+
+
+
     let mut csv = csv::Csv::default();
 
     let args: Vec<String> = env::args().collect();

@@ -11,32 +11,24 @@ pub struct Decompress{
 
 impl Decompress{
 
-    pub fn decompress(&mut self, input: Vec<u8>)-> String{
-
-        let mut decoder = ZlibDecoder::new(&input[..]);
-        let mut decompressed_data = String::new();
-        decoder.read_to_string(&mut decompressed_data);
-
-        decompressed_data
-    }
 
     pub fn decode(&mut self){
 
         for n in 0..=self.data[0].len(){
-
+            
             let mut column = Vec::new();
-
+            
             for val in self.data.iter(){
                 if let Some(v) = val.iter().nth(n){
                     column.push(v.clone());
-                }
+    }
             }
-
+    
             let duplicates_col = self.duplicates(column);
-            let delta_col = self.delta_decode(duplicates_col);
+            let delta_col = self.delta_decode(&duplicates_col);
 
-            
 
+        
             for (index, val) in self.data.iter_mut().enumerate(){
                 if let Some(v) = val.iter_mut().nth(n){
                     let value = delta_col.get(index).to_owned();
@@ -57,56 +49,45 @@ impl Decompress{
             if num == ""{
                 continue;
             }
-
+    
             if first_iter{
                 first_iter=false;
                 prev_val=num.to_string();
                 continue;
-            }
-
+        }
+    
             if num =="-"{
                 *num=prev_val.to_string();
-            }
+    }
             else{
                 prev_val=num.to_string();
             }
         }
-
+    
         return col;
     }
 
-    fn delta_decode(&self, mut col: Vec<String>) -> Vec<String>{
+    fn delta_decode(&self, encoded_data: &Vec<String>) -> Vec<String>{
 
-        let mut first_iter = true;
-        let mut prev_value= Decimal::new(0, 2);
-        let mut temp= Decimal::new(0, 2);
-        for num in &mut col.iter_mut() {
+        let mut decoded_data = Vec::with_capacity(encoded_data.len());
+        let mut prev_value = Decimal::new(0, 2);
+    
+        for diff in encoded_data {
 
-            if num == ""{
+            if Decimal::from_str(&diff).is_err(){
+                decoded_data.push(diff.to_string());
                 continue;
             }
-
-            let can_parse=Decimal::from_str(num).is_ok();
-
-            if can_parse{
-
-
-                temp = Decimal::from_str(num).unwrap();
-
-                if first_iter{
-                    prev_value=temp;
-                    first_iter=false;
-                    continue;
-                }
-
-                let delta = prev_value - temp;
-                *num=delta.to_string();
-
-            }
-
+            let temp = Decimal::from_str(&diff).unwrap();
+            let value = prev_value + temp;
+            decoded_data.push(value.to_string());
+            prev_value = value;
         }
-        return col;
+    
+        decoded_data
     }
+
+
     
 
 
