@@ -26,29 +26,22 @@ pub fn compress_single_file(path: &Path, io: &mut io_operations::ReadWrite, roun
     io.save_as_binary_file(compr.data, compr.headers, &new_path).expect("Failed to save data to file.");
 
 
-    let _output = Command::new("xz")
-    .arg("-z")
-    .arg(new_path) // Specify the file you want to compress
+    let _output = Command::new("mcm")
+    .arg("-x11")
+    .arg(new_path.clone()) // Specify the file you want to compress
     .output()
-    .expect("Failed to execute xz");
+    .expect("Failed to execute mcm");
+
+
+    let _remove = Command::new("rm")
+    .arg(new_path.clone())
+    .output()
+    .expect("Failed to execute remove");
 }
 
 
 pub fn decompress_single_file(path: &Path, io: &mut io_operations::ReadWrite) {
 
-    let _output = Command::new("xz")
-    .arg("-d")
-    .arg(path) // Specify the file you want to compress
-    .output()
-    .expect("Failed to execute xz");
-
-
-
-    let mut decompress = decompress::Decompress{
-        data: Vec::new()
-    };
-
-    
     let temp_name = path.file_stem()
     .unwrap()
     .to_string_lossy()
@@ -58,13 +51,30 @@ pub fn decompress_single_file(path: &Path, io: &mut io_operations::ReadWrite) {
     temp_path.set_file_name(temp_name);
     temp_path.set_extension("bin");
 
+    let _output = Command::new("mcm")
+    .arg("d")
+    .arg(path) // Specify the file you want to compress
+    .arg(temp_path.clone())
+    .output()
+    .expect("Failed to execute mcm");
+
+
+    let _remove = Command::new("rm")
+    .arg(path.clone())
+    .output()
+    .expect("Failed to execute remove");
+
+    let mut decompress = decompress::Decompress{
+        data: Vec::new()
+    };
+
 
     io.read_from_binary_file(&temp_path).expect("Failed to read data from the binary file.");
 
     decompress.data = io.data.to_vec();
     decompress.decode();
 
-    
+
 
     let mut new_name = temp_path.file_stem()
     .unwrap()
@@ -77,6 +87,11 @@ pub fn decompress_single_file(path: &Path, io: &mut io_operations::ReadWrite) {
     new_path.set_extension("csv");
 
     let _ = io.save_csv(&new_path, decompress.data);
+
+    let _remove = Command::new("rm")
+    .arg(temp_path.clone())
+    .output()
+    .expect("Failed to execute remove");
 
 
 }
