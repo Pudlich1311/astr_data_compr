@@ -1,14 +1,9 @@
-use std::collections::HashSet;
 use rust_decimal::prelude::*;
-use std::io::prelude::*;
-use flate2::Compression;
-use flate2::write::ZlibEncoder;
-use zfp_sys::*;
 
 
 pub struct Compress{
     pub data: Vec<Vec<String>>,
-    pub compressed_data: Vec<Vec<String>>,
+    pub headers: Vec<String>,
     pub round: bool
 }
 
@@ -26,37 +21,24 @@ impl Compress{
                 }
             }
 
-            if(self.round){
-                column = self.round_values(column);
+            if self.round {
+                self.round_values(&mut column, self.headers[n].clone());
             }
 
 
-            let delta_col = self.delta_encode(&column);
-            let duplicates_col = self.remove_duplicates(delta_col);
+            let mut delta_col = self.delta_encode(&mut column);
+            self.remove_duplicates(&mut delta_col);
         
             for (index, val) in self.data.iter_mut().enumerate(){
                 if let Some(v) = val.iter_mut().nth(n){
-                    let value = duplicates_col.get(index).to_owned();
+                    let value = delta_col.get(index).to_owned();
                     *v = value.unwrap().to_owned();
                 }
             }
-            
-            self.compressed_data=self.data.clone();
         }
-    }
 
-    
-
-
-    fn float_encode(&self, col: Vec<String>) -> Vec<String>{
-
-        let mut encoded_values = self.delta_encode(&col);
-
-
-        return encoded_values;
 
     }
-
 
 
     fn delta_encode(&self, data: &Vec<String>) -> Vec<String>{
@@ -80,17 +62,17 @@ impl Compress{
         encoded_data
     }
 
-    fn round_values(&self, mut col: Vec<String>) -> Vec<String>{
+    fn round_values(&self, col: &mut Vec<String>, header: String){
 
         let mut power_of_10 = 10_f64.powi(6);
 
-        for num in &mut col.iter_mut() {
+        for num in col.iter_mut() {
 
             if num == ""{
                 continue;
             }
 
-            if num.to_lowercase().contains("error"){
+            if header.to_lowercase().contains("error"){
                 power_of_10 = 10_f64.powi(2);
             }
             let number: Result<f64, _> = num.parse();
@@ -103,21 +85,19 @@ impl Compress{
                         *num=rounded.to_string();
                     }
                 }
-                Err(e) => {
+                Err(_e) => {
                     continue;
                 }
             }
         }
-
-        return col;
     }
 
-    fn remove_duplicates(&self, mut col: Vec<String>) -> Vec<String>{
+    fn remove_duplicates(&self, col: &mut Vec<String>){
 
         let mut prev_val = String::new();
         let mut first_iter = true;
 
-        for num in &mut col.iter_mut() {
+        for num in col.iter_mut(){
     
             if num == ""{
                 continue; 
@@ -138,7 +118,6 @@ impl Compress{
 
         }
 
-        return col;
     }
 
 }

@@ -1,12 +1,8 @@
-use std::collections::HashSet;
 use rust_decimal::prelude::*;
-use flate2::read::ZlibDecoder;
-use std::io;
-use std::io::prelude::*;
 
 
 pub struct Decompress{
-    pub data: Vec<Vec<String>>,
+    pub data: Vec<Vec<String>>
 }
 
 impl Decompress{
@@ -21,7 +17,7 @@ impl Decompress{
             for val in self.data.iter(){
                 if let Some(v) = val.iter().nth(n){
                     column.push(v.clone());
-    }
+                 }
             }
     
             let duplicates_col = self.duplicates(column);
@@ -80,14 +76,28 @@ impl Decompress{
             }
             let temp = Decimal::from_str(&diff).unwrap();
             let value = prev_value + temp;
-            decoded_data.push(value.to_string());
+
+            let mut trim_string = value.to_string();
+            self.remove_trailing_zeros_if_decimal(&mut trim_string);
+            decoded_data.push(trim_string);
             prev_value = value;
         }
     
         decoded_data
     }
 
-
+    fn remove_trailing_zeros_if_decimal(&self, input_string: &mut String) {
+        if input_string.contains('.') {
+            while input_string.ends_with('0') {
+                if let Some(second_last_char) = input_string.chars().rev().nth(1) {
+                    if second_last_char == '.' {
+                        return;
+                    }
+                }
+                input_string.pop();
+            }
+        }
+    }
     
 
 
